@@ -3,7 +3,7 @@ import zmq
 import simplejson
 import sys
 import time
-import threading
+
 
 # my libs
 from system import System
@@ -14,22 +14,14 @@ __relayEDDN             = 'tcp://eddn.edcd.io:9500'
 __timeoutEDDN           = 600000
 __subscriber            = None
 
+# maintain system list here
+
+
 def main():
     # 2 threads
-    # EDDN facing thread
-    #   get message
-    #       filter by:
-    #       schema
-    #       isPopulated
-    #       has a faction
-    #   form a factions object
-    #   hash the factions object
-    #   pass the hash and its system to system list
 
-    # 5 min interval update thread
-    #   iterate over system list
-    #       remove entries marked for deletion
-    #       execute iteration step on each entry
+
+
 
     setupEDDN()
     while True:
