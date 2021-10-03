@@ -1,2 +1,2 @@
 # TickDetector
-PTN's own in-house tick detector.
+PTN's own in-house BGS tick detector for Elite Dangerous.
