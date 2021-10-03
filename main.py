@@ -3,7 +3,7 @@ import zmq
 import simplejson
 import sys
 import time
-import asyncio
+import threading
 
 # my libs
 from system import System
@@ -15,14 +15,28 @@ __timeoutEDDN           = 600000
 __subscriber            = None
 
 def main():
-    #setupEDDN()
+    # 2 threads
+    # EDDN facing thread
+    #   get message
+    #       filter by:
+    #       schema
+    #       isPopulated
+    #       has a faction
+    #   form a factions object
+    #   hash the factions object
+    #   pass the hash and its system to system list
 
-    #print(listenEDDN())
-    s = [2, 2 ,2 ,4 ,5 ,6, None]
-    s = list(set(s))
-    s.remove(None)
-    print(s)
-    return NULL
+    # 5 min interval update thread
+    #   iterate over system list
+    #       remove entries marked for deletion
+    #       execute iteration step on each entry
+
+    setupEDDN()
+    while True:
+        __json = listenEDDN()
+
+
+    return None
 
 
 
