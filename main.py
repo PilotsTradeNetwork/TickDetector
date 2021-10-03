@@ -5,6 +5,9 @@ import sys
 import time
 import asyncio
 
+# my libs
+from system import System
+
 from zmq.sugar.constants import NULL
 
 __relayEDDN             = 'tcp://eddn.edcd.io:9500'

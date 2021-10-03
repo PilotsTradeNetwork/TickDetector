@@ -29,10 +29,3 @@ class System:
         self.hashedStates[11] = hashVal
         self.ticked = True
         self.intervalsSinceTick = 0
-
-    def checkTicked(self):
-        entries = list(set(self.hashedStates))
-        entries.remove(None)
-        if len(entries) > 1:
-            return True
-        return False
