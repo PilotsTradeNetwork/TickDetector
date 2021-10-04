@@ -20,12 +20,14 @@ __subscriber            = None
 def main():
     # 2 threads
 
+    ls = [1,2,3,None,None]
+    ls = list(filter((None).__ne__, ls))
+    print(ls)
 
 
-
-    setupEDDN()
-    while True:
-        __json = listenEDDN()
+    # setupEDDN()
+    # while True:
+    #     __json = listenEDDN()
 
 
     return None

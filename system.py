@@ -1,51 +1,88 @@
+
+
 class System:
-    def __init__(self, name: str, hashVal: int, maxIntervalCount: int, deletionInterval: int):
+    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int, minimumObservedSpan: int):
         # unique identifier
-        self.name = name
+        self.name = sysName
 
-
-        self.hashedStates = [None]*11
-        self.hashedStates.append(hashVal)
+        self.stateHashes = [None]*11
+        self.stateHashes.append(initHash)
 
         self.maxIntvlCnt = maxIntervalCount
-        self.dltIntrvl = deletionInterval
+        self.minSpan = minimumObservedSpan
 
         # state
-        self.ticked = None
+        self.isTicked = None
+        # Tracked and Ticked: True
+        # Track and not ticked: False
+        # Observed but not tracked: None (Systems has sparse data)
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
 
         self.deletionMark = False
 
     # Called every 5 minutes
-    def interval(self):
+    def performInterval(self):
         """Performs the system's status management, designed to work on 5 minute intervals."""
-        self.hashedStates = self.hashedStates[1:(self.maxIntvlCnt-1)]
-        self.hashedStates.append(None)
+        self.intrvlsSinceUpdate += 1
 
-        if self.ticked == True:
+        # Move tracking window along
+        self.stateHashes = self.stateHashes[1:(self.maxIntvlCnt-1)]
+
+        # Add empty slot for new data
+        self.stateHashes.append(None)
+        
+        # Delete and stop tracking the object if it has no data
+        if self.intrvlsSinceUpdate >= self.maxIntvlCnt:
+            self.deletionMark = True
+            self.isTicked = None
+            return
+
+        # Logic to update 'Ticked' systems
+        if self.isTicked == True:
             self.intrvlsSinceTick += 1
 
-            # Unticks system after 1hr
-            if self.intrvlsSinceTick >= self.maxIntvlCnt:
-                self.ticked = False
+            # System's tick has exited observation window, mark as false and subject to screening
+            if self.intrvlsSinceTick > self.maxIntvlCnt:
+                self.isTicked = False
+                self.intrvlsSinceTick = 0
+            # System ticked within observation window, maintain it
+            else:
+                return
         
-        self.intrvlsSinceUpdate += 1
-        if self.intrvlsSinceUpdate >= self.dltIntrvl:
-            self.deletionMark = True
+        # Screening
+        # Stop tracking ticked state if only 1 observation exists in the pool
+        if self.isTicked == False and len(list(filter(None.__ne__, self.stateHashes))) <= 1:
+            self.isTicked = None
+            return
+
+        # Start tracking if sufficient observation span is reached
+        if self.minSpan >= 1 and self.isTicked != True:
+            entryLocs = [i for i, value in enumerate(self.stateHashes) if value != None]
+            if entryLocs[-1]-entryLocs[0] > self.minSpan:
+                self.isTicked = False
+                return
+            
+            # May be triggered if a system has two observation close to eachother
+            self.isTicked = None
+            return
 
 
-    def receiveStateUpdate(self, hashVal: int):
-        # if updateState is already most current
-        if self.hashedStates[(self.maxIntvlCnt-1)] == hashVal:
+
+
+
+
+    def receiveStateUpdate(self, hash: int):
+        # State is already present in log (a normal Update)
+        if hash in self.stateHashes:
+            self.stateHashes[(self.maxIntvlCnt-1)] = hash
+            self.intrvlsSinceUpdate = 0
             return
         
-        # State is already present but not most current
-        if hashVal in self.hashedStates:
-            self.hashedStates[(self.maxIntvlCnt-1)] = hashVal
-            return
-        
-        # State is entirely new
-        self.hashedStates[(self.maxIntvlCnt-1)] = hashVal
-        self.ticked = True
+        # State is entirely new (a Tick has occurred)
+        self.stateHashes[(self.maxIntvlCnt-1)] = hash
+        self.isTicked = True
         self.intrvlsSinceTick = 0
+        self.intrvlsSinceUpdate = 0
+
+        # NB: This doesn't report a Tick on the System's first entry, because first entry is part of the __init__
