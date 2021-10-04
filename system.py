@@ -1,21 +1,23 @@
 
 
 class System:
-    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int, minimumObservedSpan: int):
+    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12, minimumObservedSpan: int = 6):
+        # OBJECT PROPERTIES
+
         # unique identifier
-        self.name = sysName
+        self._name = sysName
 
-        self.stateHashes = [None]*11
-        self.stateHashes.append(initHash)
-
-        self.maxIntvlCnt = maxIntervalCount
-        self.minSpan = minimumObservedSpan
-
-        # state
+        # universal across all Systems, consider moving to a higher scope (factory?) to save memory
+        self.__maxIntvlCnt = maxIntervalCount
+        self.__minSpan = minimumObservedSpan
+        
+        # OBJECT STATES
         self.isTicked = None
         # Tracked and Ticked: True
         # Track and not ticked: False
         # Observed but not tracked: None (Systems has sparse data)
+        self.stateHashes = [None]*11
+        self.stateHashes.append(initHash)
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
 
@@ -27,13 +29,13 @@ class System:
         self.intrvlsSinceUpdate += 1
 
         # Move tracking window along
-        self.stateHashes = self.stateHashes[1:(self.maxIntvlCnt-1)]
+        self.stateHashes = self.stateHashes[1:(self.__maxIntvlCnt-1)]
 
         # Add empty slot for new data
         self.stateHashes.append(None)
         
         # Delete and stop tracking the object if it has no data
-        if self.intrvlsSinceUpdate >= self.maxIntvlCnt:
+        if self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
             self.deletionMark = True
             self.isTicked = None
             return
@@ -43,7 +45,7 @@ class System:
             self.intrvlsSinceTick += 1
 
             # System's tick has exited observation window, mark as false and subject to screening
-            if self.intrvlsSinceTick > self.maxIntvlCnt:
+            if self.intrvlsSinceTick > self.__maxIntvlCnt:
                 self.isTicked = False
                 self.intrvlsSinceTick = 0
             # System ticked within observation window, maintain it
@@ -57,9 +59,9 @@ class System:
             return
 
         # Start tracking if sufficient observation span is reached
-        if self.minSpan >= 1 and self.isTicked != True:
+        if self.__minSpan >= 1 and self.isTicked != True:
             entryLocs = [i for i, value in enumerate(self.stateHashes) if value != None]
-            if entryLocs[-1]-entryLocs[0] > self.minSpan:
+            if entryLocs[-1]-entryLocs[0] > self.__minSpan:
                 self.isTicked = False
                 return
             
@@ -75,12 +77,12 @@ class System:
     def receiveStateUpdate(self, hash: int):
         # State is already present in log (a normal Update)
         if hash in self.stateHashes:
-            self.stateHashes[(self.maxIntvlCnt-1)] = hash
+            self.stateHashes[(self.__maxIntvlCnt-1)] = hash
             self.intrvlsSinceUpdate = 0
             return
         
         # State is entirely new (a Tick has occurred)
-        self.stateHashes[(self.maxIntvlCnt-1)] = hash
+        self.stateHashes[(self.__maxIntvlCnt-1)] = hash
         self.isTicked = True
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
