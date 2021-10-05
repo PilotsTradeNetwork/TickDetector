@@ -21,7 +21,7 @@ def main():
     # 2 threads
 
     ls = [1,2,3,None,None]
-    ls = list(filter((None).__ne__, ls))
+    ls = "test"
     print(ls)
 
 

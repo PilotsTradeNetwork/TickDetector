@@ -1,6 +1,7 @@
 import threading
 
-
+def iterator():
+    return
 # 5 min interval update thread
 #   iterate over system list
 #       remove entries marked for deletion
