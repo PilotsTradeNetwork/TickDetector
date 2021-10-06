@@ -5,22 +5,31 @@ import simplejson
 from jsonschema import validate
 import sys
 import time
+from urllib.request import urlopen
 __relayEDDN             = 'tcp://eddn.edcd.io:9500'
 __timeoutEDDN           = 600000
 __subscriber            = None
+__schemaURL             = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
 
 
 class EDDNThread(Thread):
     def run(self, filterType: str):
         setupEDDN()
+        schema = simplejson.loads(urlopen(__schemaURL))
+
         while True:
             time.sleep(0) # maybe move me to the end of the list
             eventJson = listenEDDN()
-            # filter a
-            # filter b
-            # filter c
-            # hashing function
-            # update or create a system
+            try:
+                validate(eventJson, schema=schema)
+            except Exception as e:
+                print(e)
+                continue
+                # filter a
+                # filter b
+                # filter c
+                # hashing function
+                # update or create a system
 
 
     

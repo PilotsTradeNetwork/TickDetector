@@ -16,7 +16,10 @@ class System:
         # Tracked and Ticked: True
         # Track and not ticked: False
         # Observed but not tracked: None (Systems has sparse data)
+
         self.stateHashes = [None]*11
+        # ugh, should this have one for factionState monitoring and another for factionInfluence monitoring?
+        
         self.stateHashes.append(initHash)
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
