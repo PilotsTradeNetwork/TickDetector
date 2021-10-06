@@ -43,7 +43,7 @@ class System:
         if self.isTicked == True:
             self.intrvlsSinceTick += 1
 
-            if self.intrvlsSinceTick > self.__maxIntvlCnt:
+            if self.intrvlsSinceTick >= self.__maxIntvlCnt:
                 self.isTicked = False
                 self.intrvlsSinceTick = 0
                 #NB: lack of return statement here, will continue to 3rd if
@@ -53,13 +53,14 @@ class System:
         
         # Screening unticked systems with insufficient data
         # Start tracking if sufficient observation span is reached
-        if self.intrvlsSinceUpdate > self.__minSpan:
+        if self.intrvlsSinceUpdate >= self.__minSpan:
             self.isTicked = None
             return
 
         print("You should not reach here, back to the shadows foul beast!")
 
     def receiveStateUpdate(self, hash: int):
+        """Accepts a hash of a system's state, handles whether that represents a new tick and flags it."""
         # State is already present in log (a normal Update), and current interval has not been updated
         if self.intrvlsSinceUpdate > 0 and hash in self.stateHashes:
             self.stateHashes[(self.__maxIntvlCnt-1)] = hash
