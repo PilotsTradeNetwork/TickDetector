@@ -28,54 +28,43 @@ class System:
         """Performs the system's status management, designed to work on 5 minute intervals."""
         self.intrvlsSinceUpdate += 1
 
-        # Move tracking window along
+        # Move tracking window along and add empty slot for new data
         self.stateHashes = self.stateHashes[1:(self.__maxIntvlCnt-1)]
-
-        # Add empty slot for new data
         self.stateHashes.append(None)
         
-        # Delete and stop tracking the object if it has no data
-        if self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
+        # Handle untracked, entirely out of date systems
+        # Delete the object if it has no data
+        if self.isTicked == None and self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
             self.deletionMark = True
-            self.isTicked = None
+            #TODO: Should this function return a bool instead of updating the deletionMark?
             return
 
-        # Logic to update 'Ticked' systems
+        # Handle 'Ticked' Systems
         if self.isTicked == True:
             self.intrvlsSinceTick += 1
 
-            # System's tick has exited observation window, mark as false and subject to screening
             if self.intrvlsSinceTick > self.__maxIntvlCnt:
                 self.isTicked = False
                 self.intrvlsSinceTick = 0
-            # System ticked within observation window, maintain it
+                #NB: lack of return statement here, will continue to 3rd if
             else:
+                # This return 'keeps' systems that ticked in the last hour, regardless of data freshness
                 return
         
-        # Screening
-        # Stop tracking ticked state if only 1 observation exists in the pool
-        if self.isTicked == False and len(list(filter(None.__ne__, self.stateHashes))) <= 1:
+        # Screening unticked systems with insufficient data
+        # Start tracking if sufficient observation span is reached
+        if self.intrvlsSinceUpdate > self.__minSpan:
             self.isTicked = None
             return
 
-        # Start tracking if sufficient observation span is reached
-        if self.__minSpan >= 1 and self.isTicked != True:
-            entryLocs = [i for i, value in enumerate(self.stateHashes) if value != None]
-            if entryLocs[-1]-entryLocs[0] > self.__minSpan:
-                self.isTicked = False
-                return
-            
-            # May be triggered if a system has two observation close to eachother
-            self.isTicked = None
-            return
+        print("You should not reach here, back to the shadows foul beast!")
 
     def receiveStateUpdate(self, hash: int):
-        # State is already present in log (a normal Update)
-        if self.intrvlsSinceUpdate > 0:
-            if hash in self.stateHashes:
-                self.stateHashes[(self.__maxIntvlCnt-1)] = hash
-                self.intrvlsSinceUpdate = 0
-                return
+        # State is already present in log (a normal Update), and current interval has not been updated
+        if self.intrvlsSinceUpdate > 0 and hash in self.stateHashes:
+            self.stateHashes[(self.__maxIntvlCnt-1)] = hash
+            self.intrvlsSinceUpdate = 0
+            return
         
         # State is entirely new (a Tick has occurred)
         self.stateHashes[(self.__maxIntvlCnt-1)] = hash
@@ -83,4 +72,4 @@ class System:
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
 
-        # NB: This doesn't report a Tick on the System's first entry, because first entry is part of the __init__
+        # NB: This doesn't report a Tick on the System's first entry, because first entry occurs as part of the __init__
