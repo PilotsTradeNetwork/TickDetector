@@ -69,17 +69,13 @@ class System:
             self.isTicked = None
             return
 
-
-
-
-
-
     def receiveStateUpdate(self, hash: int):
         # State is already present in log (a normal Update)
-        if hash in self.stateHashes:
-            self.stateHashes[(self.__maxIntvlCnt-1)] = hash
-            self.intrvlsSinceUpdate = 0
-            return
+        if self.intrvlsSinceUpdate > 0:
+            if hash in self.stateHashes:
+                self.stateHashes[(self.__maxIntvlCnt-1)] = hash
+                self.intrvlsSinceUpdate = 0
+                return
         
         # State is entirely new (a Tick has occurred)
         self.stateHashes[(self.__maxIntvlCnt-1)] = hash

@@ -1,7 +1,7 @@
 import threading
 
 def EDDNThread():
-    return:
+    return
     
 
 # EDDN facing thread
