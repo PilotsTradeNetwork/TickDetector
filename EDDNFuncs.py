@@ -2,6 +2,7 @@ from threading import Thread
 import zlib
 import zmq
 import simplejson
+from jsonschema import validate
 import sys
 import time
 __relayEDDN             = 'tcp://eddn.edcd.io:9500'
@@ -13,11 +14,13 @@ class EDDNThread(Thread):
     def run(self, filterType: str):
         setupEDDN()
         while True:
-            time.sleep(0)
+            time.sleep(0) # maybe move me to the end of the list
             eventJson = listenEDDN()
             # filter a
             # filter b
             # filter c
+            # hashing function
+            # update or create a system
 
 
     
