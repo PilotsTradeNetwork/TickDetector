@@ -1,29 +1,17 @@
-
-
-
-# my libs
+# external
 from system import System
 
-from zmq.sugar.constants import NULL
+# internal
+from EDDNFuncs import EDDNThread
+from IteratorFuncs import iteratorThread
 
-
-# maintain system list here
-
+global systemList
+systemList = [System]
 
 def main():
     # 2 threads
-
-    ls = [1,2,3,None,None]
-    ls = "test"
-    print(ls)
-
-
-    # setupEDDN()
-    # while True:
-    #     __json = listenEDDN()
-
-
-    return None
+    iteratorThread().start()
+    EDDNThread().start()
 
 
 

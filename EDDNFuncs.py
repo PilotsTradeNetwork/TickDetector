@@ -6,6 +6,11 @@ from jsonschema import validate
 import sys
 import time
 from urllib.request import urlopen
+from system import System
+
+import EDDNEventListenerModule as EListn
+from main import systemList
+
 __relayEDDN             = 'tcp://eddn.edcd.io:9500'
 __timeoutEDDN           = 600000
 __subscriber            = None
@@ -13,26 +18,40 @@ __schemaURL             = 'https://raw.githubusercontent.com/EDCD/EDDN/master/sc
 
 
 class EDDNThread(Thread):
+    global systemList
     def run(self, filterType: str):
         self.__setupEDDN()
         schema = simplejson.loads(urlopen(__schemaURL))
-
         while True:
             time.sleep(0) # maybe move me to the end of the list
             eventJson = self.__listenEDDN()
+
+            # Validate event schema
             try:
                 validate(eventJson, schema=schema)
             except Exception as e:
                 print(e)
                 continue
-                # filter a
-                # filter b
-                # filter c
-                # hashing function
-                # update or create a system
+            
+            event = EListn.FSDJumpEvent(EListn.createMessageFromJson(eventJson))
 
-
-    
+            if event == None or event.eventAgeSeconds > 300 or event.systemPopulation < 1 or event.factions == None:
+                continue
+            
+            hashVal = hash(event.messageData.get('Factions'))
+            systemName = event.systemName
+            if len(systemList) == 0:
+                systemList.append(System(systemName, hashVal))
+                continue
+            for sys in systemList:
+                if sys.name == systemName:
+                    sys.receiveStateUpdate(hashVal)
+                    continue
+            systemList.append(System(systemName, hashVal))
+            # filter b
+            # filter c
+            # hashing function
+            # update or create a system
 
     def __setupEDDN():
         global __subscriber

@@ -5,7 +5,7 @@ class System:
         # OBJECT PROPERTIES
 
         # unique identifier
-        self._name = sysName
+        self.name = sysName
 
         # universal across all Systems, consider moving to a higher scope (factory?) to save memory
         self.__maxIntvlCnt = maxIntervalCount
@@ -19,7 +19,7 @@ class System:
 
         self.stateHashes = [None]*11
         # ugh, should this have one for factionState monitoring and another for factionInfluence monitoring?
-        
+
         self.stateHashes.append(initHash)
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
