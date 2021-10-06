@@ -36,8 +36,8 @@ class System:
         # Delete the object if it has no data
         if self.isTicked == None and self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
             self.deletionMark = True
-            #TODO: Should this function return a bool instead of updating the deletionMark?
-            return
+            #TODO: Should this function return a bool instead of updating the deletionMark? Ans: yes :)
+            return True
 
         # Handle 'Ticked' Systems
         if self.isTicked == True:
@@ -49,15 +49,16 @@ class System:
                 #NB: lack of return statement here, will continue to 3rd if
             else:
                 # This return 'keeps' systems that ticked in the last hour, regardless of data freshness
-                return
+                return False
         
         # Screening unticked systems with insufficient data
         # Start tracking if sufficient observation span is reached
         if self.intrvlsSinceUpdate >= self.__minSpan:
             self.isTicked = None
-            return
-
-        print("You should not reach here, back to the shadows foul beast!")
+            return False
+        
+        # No changes need to be made (?)
+        return False
 
     def receiveStateUpdate(self, hash: int):
         """Accepts a hash of a system's state, handles whether that represents a new tick and flags it."""
