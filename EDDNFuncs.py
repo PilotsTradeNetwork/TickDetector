@@ -14,12 +14,12 @@ __schemaURL             = 'https://raw.githubusercontent.com/EDCD/EDDN/master/sc
 
 class EDDNThread(Thread):
     def run(self, filterType: str):
-        setupEDDN()
+        self.__setupEDDN()
         schema = simplejson.loads(urlopen(__schemaURL))
 
         while True:
             time.sleep(0) # maybe move me to the end of the list
-            eventJson = listenEDDN()
+            eventJson = self.__listenEDDN()
             try:
                 validate(eventJson, schema=schema)
             except Exception as e:
@@ -34,32 +34,32 @@ class EDDNThread(Thread):
 
     
 
-def setupEDDN():
-    global __subscriber
-    context     = zmq.Context()
-    __subscriber  = context.socket(zmq.SUB)
-    
-    __subscriber.setsockopt(zmq.SUBSCRIBE, b"")
-    __subscriber.setsockopt(zmq.RCVTIMEO, __timeoutEDDN)
+    def __setupEDDN():
+        global __subscriber
+        context     = zmq.Context()
+        __subscriber  = context.socket(zmq.SUB)
+        
+        __subscriber.setsockopt(zmq.SUBSCRIBE, b"")
+        __subscriber.setsockopt(zmq.RCVTIMEO, __timeoutEDDN)
 
 
-def listenEDDN():
-    try:
-        __subscriber.connect(__relayEDDN)
-        sys.stdout.flush()
-        __message   = __subscriber.recv()
-        if __message == False:
+    def __listenEDDN():
+        try:
+            __subscriber.connect(__relayEDDN)
+            sys.stdout.flush()
+            __message   = __subscriber.recv()
+            if __message == False:
+                __subscriber.disconnect(__relayEDDN)
+                return None
+            __message   = zlib.decompress(__message)
+            __json      = simplejson.loads(__message)
+            return __json
+
+        except zmq.ZMQError as e:
+            print ('ZMQSocketException: ' + str(e))
+            sys.stdout.flush()
             __subscriber.disconnect(__relayEDDN)
-            return None
-        __message   = zlib.decompress(__message)
-        __json      = simplejson.loads(__message)
-        return __json
-
-    except zmq.ZMQError as e:
-        print ('ZMQSocketException: ' + str(e))
-        sys.stdout.flush()
-        __subscriber.disconnect(__relayEDDN)
-        time.sleep(5)
+            time.sleep(5)
 
 # EDDN facing thread
 #   get message
