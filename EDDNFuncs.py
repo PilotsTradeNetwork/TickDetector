@@ -5,26 +5,29 @@ import simplejson
 from jsonschema import validate
 import sys
 import time
-from urllib.request import urlopen
-from system import System
+import urllib.request
 
 import EDDNEventListenerModule as EListn
-from main import systemList
+from system import systemList, System
 
 __relayEDDN             = 'tcp://eddn.edcd.io:9500'
 __timeoutEDDN           = 600000
 __subscriber            = None
-__schemaURL             = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
 
 
 class EDDNThread(Thread):
     global systemList
+
     def run(self, filterType: str = "Any"):
-        self.__setupEDDN()
-        schema = simplejson.loads(urlopen(__schemaURL))
+        schemaURL = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
+        setupEDDN()
+        with urllib.request.urlopen(schemaURL) as url:
+            data = simplejson.loads(url.read().decode())
+
+        schema = data
         while True:
             time.sleep(0) # maybe move me to the end of the list
-            eventJson = self.__listenEDDN()
+            eventJson = listenEDDN()
 
             # Validate event schema
             try:
@@ -56,7 +59,7 @@ class EDDNThread(Thread):
             # add a new system to sysList
             systemList.append(System(systemName, hashVal))
 
-    def __setupEDDN():
+def setupEDDN():
         global __subscriber
         context     = zmq.Context()
         __subscriber  = context.socket(zmq.SUB)
@@ -65,7 +68,7 @@ class EDDNThread(Thread):
         __subscriber.setsockopt(zmq.RCVTIMEO, __timeoutEDDN)
 
 
-    def __listenEDDN():
+def listenEDDN():
         try:
             __subscriber.connect(__relayEDDN)
             sys.stdout.flush()

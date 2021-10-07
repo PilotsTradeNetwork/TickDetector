@@ -11,7 +11,6 @@ def createMessageFromJson(jsonData):
         print(e)
     return None
 
-
 def formatTimestamp(rawTimestamp):
     regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
     
@@ -19,7 +18,6 @@ def formatTimestamp(rawTimestamp):
     dateTimeString = cleanTimestampArr[1] + " " + cleanTimestampArr[2] + ".000000"
     cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
     return cleanTimeStamp
-
 
 class Event:
     def __init__(self, message):
@@ -38,7 +36,6 @@ def createFSDJumpEvent(message):
         return FSDJumpEvent(message)
     return None
 
-
 class FSDJumpEvent(Event):
     """FSDJumpEvent, but super lightweight"""
     def __init__(self, message):
@@ -53,7 +50,7 @@ class FSDJumpEvent(Event):
         self.systemPopulation = message.get('Population')
 
         # only present/relevant in populated systems
-        
+
         # Faction stuff, probably all needs revalidating due to data nesting
         # self.factions = getFactions(message)
 

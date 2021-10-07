@@ -1,12 +1,8 @@
-# external
-from system import System
-
 # internal
 from EDDNFuncs import EDDNThread
 from IteratorFuncs import iteratorThread
 
-global systemList
-systemList = [System]
+
 
 def main():
     # 2 threads
