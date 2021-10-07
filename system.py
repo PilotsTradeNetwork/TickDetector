@@ -1,5 +1,8 @@
 
 
+from zmq.backend import has
+
+
 class System:
     def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12, minimumObservedSpan: int = 6):
         # OBJECT PROPERTIES
@@ -24,57 +27,59 @@ class System:
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
 
-        self.deletionMark = False
-
-    # Called every 5 minutes
     def performInterval(self):
-        """Performs the system's status management, designed to work on 5 minute intervals."""
+        """Performs the system's status management - returns whether the system object should be deleted."""
         self.intrvlsSinceUpdate += 1
 
         # Move tracking window along and add empty slot for new data
         self.stateHashes = self.stateHashes[1:(self.__maxIntvlCnt-1)]
         self.stateHashes.append(None)
-        
-        # Handle untracked, entirely out of date systems
+
         # Delete the object if it has no data
         if self.isTicked == None and self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
-            self.deletionMark = True
-            #TODO: Should this function return a bool instead of updating the deletionMark? Ans: yes :)
             return True
 
+        # Handle 'Ticked' Systems
+        if not self.__updateIfTicked():
+            # Handle unticked Systems
+            self.__updateIfExpired()
+
+        return False
+
+    def __updateIfTicked(self):
         # Handle 'Ticked' Systems
         if self.isTicked == True:
             self.intrvlsSinceTick += 1
 
-            if self.intrvlsSinceTick >= self.__maxIntvlCnt:
-                self.isTicked = False
-                self.intrvlsSinceTick = 0
-                #NB: lack of return statement here, will continue to 3rd if
-            else:
-                # This return 'keeps' systems that ticked in the last hour, regardless of data freshness
-                return False
-        
-        # Screening unticked systems with insufficient data
-        # Start tracking if sufficient observation span is reached
-        if self.intrvlsSinceUpdate >= self.__minSpan:
-            self.isTicked = None
-            return False
-        
-        # No changes need to be made (?)
+            if self.intrvlsSinceTick < self.__maxIntvlCnt:
+                # The point of this return is to preserve ticked system in the observation window until the tick goes out of scope
+                return True
+            self.isTicked = False
+            self.intrvlsSinceTick = 0
         return False
 
+    def __updateIfExpired(self):
+        if self.intrvlsSinceUpdate >= self.__minSpan:
+            self.isTicked = None
+
     def receiveStateUpdate(self, hash: int):
-        """Accepts a hash of a system's state, handles whether that represents a new tick and flags it."""
+        """Accepts a hash of a system's faction's overall state, handles whether that represents a new tick."""
+        if not self.__receiveStateUpdate(hash):
+            self.__receiveStateChange(hash)
+        
+        # NB: This doesn't report a Tick on the System's first entry, because first entry occurs as part of the __init__
+
+    def __receiveStateUpdate(self, hash: int):
         # State is already present in log (a normal Update), and current interval has not been updated
         if self.intrvlsSinceUpdate > 0 and hash in self.stateHashes:
             self.stateHashes[(self.__maxIntvlCnt-1)] = hash
             self.intrvlsSinceUpdate = 0
-            return
-        
+            return True
+        return False
+    
+    def __receiveStateChange(self, hash: int):
         # State is entirely new (a Tick has occurred)
         self.stateHashes[(self.__maxIntvlCnt-1)] = hash
         self.isTicked = True
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
-
-        # NB: This doesn't report a Tick on the System's first entry, because first entry occurs as part of the __init__

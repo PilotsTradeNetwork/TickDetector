@@ -19,7 +19,7 @@ __schemaURL             = 'https://raw.githubusercontent.com/EDCD/EDDN/master/sc
 
 class EDDNThread(Thread):
     global systemList
-    def run(self, filterType: str):
+    def run(self, filterType: str = "Any"):
         self.__setupEDDN()
         schema = simplejson.loads(urlopen(__schemaURL))
         while True:
@@ -33,25 +33,28 @@ class EDDNThread(Thread):
                 print(e)
                 continue
             
-            event = EListn.FSDJumpEvent(EListn.createMessageFromJson(eventJson))
+            event = EListn.createFSDJumpEvent(EListn.createMessageFromJson(eventJson))
 
-            if event == None or event.eventAgeSeconds > 300 or event.systemPopulation < 1 or event.factions == None:
+            if event == None or event.eventAgeSeconds > 300 or event.factions == None:
                 continue
             
-            hashVal = hash(event.messageData.get('Factions'))
-            systemName = event.systemName
+            # This will detect influence or state tick changes in a system
+            if filterType == "Any":
+                hashVal = hash(event.factions)
+                systemName = event.systemName
+
+            # Guard for empty sysList
             if len(systemList) == 0:
                 systemList.append(System(systemName, hashVal))
                 continue
+            
             for sys in systemList:
                 if sys.name == systemName:
                     sys.receiveStateUpdate(hashVal)
                     continue
+            
+            # add a new system to sysList
             systemList.append(System(systemName, hashVal))
-            # filter b
-            # filter c
-            # hashing function
-            # update or create a system
 
     def __setupEDDN():
         global __subscriber
