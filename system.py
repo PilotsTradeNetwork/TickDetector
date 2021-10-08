@@ -30,13 +30,12 @@ class System:
         self.stateHashes.append(None)
 
         # Delete the object if it has no data
-        if self.isTicked == None and self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
+        if self.intrvlsSinceUpdate >= self.__maxIntvlCnt:
             return True
 
         # Handle 'Ticked' Systems
-        if not self.__updateIfTicked():
-            # Handle unticked Systems
-            self.__updateIfExpired()
+        self.__updateIfTicked()
+        self.__updateIfExpired()
 
         return False
 
@@ -44,17 +43,16 @@ class System:
         # Handle 'Ticked' Systems
         if self.isTicked == True:
             self.intrvlsSinceTick += 1
-
-            if self.intrvlsSinceTick < self.__maxIntvlCnt:
-                # The point of this return is to preserve ticked system in the observation window until the tick goes out of scope
-                return True
-            self.isTicked = False
-            self.intrvlsSinceTick = 0
-        return False
+            if self.intrvlsSinceTick >= self.__maxIntvlCnt:
+                # The point of this return is to ensure a ticked system remains tracked until the tick state goes out of scope
+                
+                self.isTicked = False
+                self.intrvlsSinceTick = 0
 
     def __updateIfExpired(self):
-        if self.intrvlsSinceUpdate >= self.__minSpan:
-            self.isTicked = None
+        if self.isTicked == False:
+            if self.intrvlsSinceUpdate >= self.__minSpan and self.isTicked == False:
+                self.isTicked = None
 
     def receiveStateUpdate(self, hash: int):
         """Accepts a hash of a system's faction's overall state, handles whether that represents a new tick."""
@@ -68,6 +66,8 @@ class System:
         if self.intrvlsSinceUpdate > 0 and hash in self.stateHashes:
             self.stateHashes[(self.__maxIntvlCnt-1)] = hash
             self.intrvlsSinceUpdate = 0
+            if self.isTicked == None:
+                self.isTicked = False
             return True
         return False
     
