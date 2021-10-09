@@ -16,7 +16,7 @@ class iteratorThread(Thread):
             #   iterate over system list
             #   remove entries marked for deletion
             #   execute iteration step on each entry
-            print("Iteration beginning")
+            print("\nIteration beginning")
             systemList = [sys for sys in systemList if sys.performInterval() == False]
             self.__printTracking(systemList)
 
@@ -26,13 +26,17 @@ class iteratorThread(Thread):
         tracked = 0
         observed = 0
         ticked = 0
+
         for sys in systemList:
             if sys.isTicked == True:
                 ticked += 1
+                tracked += 1
+                observed += 1
             elif sys.isTicked == False:
                 tracked += 1
+                observed += 1
             elif sys.isTicked == None:
                 observed += 1
         now = datetime.now()
         nowFormatted = now.strftime("%H:%M:%S")
-        print(f"Ticked Systems = {ticked},\nTracked Systems = {tracked},\nObserved Systems = {observed}")
+        print(f"Time: {nowFormatted}\nTicked Systems in last Hr = {ticked},\nCurrently Tracked Systems = {tracked},\nCurrently Observed Systems = {observed}")

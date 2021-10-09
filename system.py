@@ -71,7 +71,7 @@ class System:
         self.intrvlsSinceUpdate = 0
         if self.isTicked == None:
             self.isTicked = False
-        print(f"System {self.name} state updated.")
+        # print(f"System {self.name} received an update.")
     
     def __receiveStateChange(self, hash: int):
         # State is entirely new (a Tick has occurred)
@@ -79,6 +79,6 @@ class System:
         self.isTicked = True
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
-        print(f"System {self.name} state changed.")
+        print(f"System {self.name}'s faction influence has changed.")
 
 systemList = []
