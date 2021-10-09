@@ -7,7 +7,9 @@ from IteratorFuncs import iteratorThread
 def main():
     # 2 threads
     iteratorThread().start()
+    print("IteratorThread started")
     EDDNThread().start()
+    print("EDDNThread started")
 
 
 

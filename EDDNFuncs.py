@@ -6,6 +6,7 @@ from jsonschema import validate
 import sys
 import time
 import urllib.request
+import re as regex
 
 import EDDNEventListenerModule as EListn
 from system import systemList, System
@@ -18,13 +19,14 @@ __subscriber            = None
 class EDDNThread(Thread):
     global systemList
 
-    def run(self, filterType: str = "Any"):
+    def run(self, filterType: str = "Influence"):
         schemaURL = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
         setupEDDN()
         with urllib.request.urlopen(schemaURL) as url:
             data = simplejson.loads(url.read().decode())
 
         schema = data
+        expression = regex.compile('("Influence": \d+\.\d+)')
         while True:
             time.sleep(0) # maybe move me to the end of the list
             eventJson = listenEDDN()
@@ -33,7 +35,7 @@ class EDDNThread(Thread):
             try:
                 validate(eventJson, schema=schema)
             except Exception as e:
-                print(e)
+                # print(e)
                 continue
             
             event = EListn.createFSDJumpEvent(EListn.createMessageFromJson(eventJson))
@@ -42,10 +44,16 @@ class EDDNThread(Thread):
                 continue
             
             # This will detect influence or state tick changes in a system
-            if filterType == "Any":
-                hashVal = hash(event.factions)
+            if filterType == "Influence":
+                textInf = ''.join(regex.findall('("Influence": \d+\.\d+)', simplejson.dumps(event.factions)))
+                # print(f"Test: {textInf}")
+                hashVal = hash(textInf)
                 systemName = event.systemName
 
+            #bug fixing
+            # if systemName == "Alcor":
+            #     print(simplejson.dumps(event.factions))
+            
             # Guard for empty sysList
             if len(systemList) == 0:
                 systemList.append(System(systemName, hashVal))

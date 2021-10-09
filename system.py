@@ -3,6 +3,7 @@ class System:
         # OBJECT PROPERTIES
         # unique identifier
         self.name = sysName
+        # print(f"System {self.name} added to systemList")
 
         # universal across all Systems, consider moving to a higher scope (factory?) to save memory
         self.__maxIntvlCnt = maxIntervalCount
@@ -14,7 +15,7 @@ class System:
         # Tracked but not Ticked: False
         # Observed but not Tracked: None (System has sparse data)
 
-        self.stateHashes = [None]*11
+        self.stateHashes = [None]*(maxIntervalCount-1)
         # ugh, should this have one for factionState monitoring and another for factionInfluence monitoring?
 
         self.stateHashes.append(initHash)
@@ -26,7 +27,7 @@ class System:
         self.intrvlsSinceUpdate += 1
 
         # Move tracking window along and add empty slot for new data
-        self.stateHashes = self.stateHashes[1:(self.__maxIntvlCnt-1)]
+        self.stateHashes.pop(0)
         self.stateHashes.append(None)
 
         # Delete the object if it has no data
@@ -56,20 +57,21 @@ class System:
 
     def receiveStateUpdate(self, hash: int):
         """Accepts a hash of a system's faction's overall state, handles whether that represents a new tick."""
-        if not self.__receiveStateUpdate(hash):
-            self.__receiveStateChange(hash)
+        if self.intrvlsSinceUpdate > 0:
+            if hash in self.stateHashes:
+                self.__receiveStateUpdate(hash)
+            else:
+                self.__receiveStateChange(hash)
         
         # NB: This doesn't report a Tick on the System's first entry, because first entry occurs as part of the __init__
 
     def __receiveStateUpdate(self, hash: int):
         # State is already present in log (a normal Update), and current interval has not been updated
-        if self.intrvlsSinceUpdate > 0 and hash in self.stateHashes:
-            self.stateHashes[(self.__maxIntvlCnt-1)] = hash
-            self.intrvlsSinceUpdate = 0
-            if self.isTicked == None:
-                self.isTicked = False
-            return True
-        return False
+        self.stateHashes[(self.__maxIntvlCnt-1)] = hash
+        self.intrvlsSinceUpdate = 0
+        if self.isTicked == None:
+            self.isTicked = False
+        print(f"System {self.name} state updated.")
     
     def __receiveStateChange(self, hash: int):
         # State is entirely new (a Tick has occurred)
@@ -77,5 +79,6 @@ class System:
         self.isTicked = True
         self.intrvlsSinceTick = 0
         self.intrvlsSinceUpdate = 0
+        print(f"System {self.name} state changed.")
 
-systemList = [System]
+systemList = []
