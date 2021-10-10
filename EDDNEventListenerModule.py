@@ -22,7 +22,7 @@ class Event:
         if self.eventType == None:
             raise ValueError("Class 'Event': attempted to instantiate an Event Object using a message containing no Event. Check if the message has an event first.")
 
-    def __formatTimestamp(rawTimestamp):
+    def __formatTimestamp(self, rawTimestamp):
         regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
         
         cleanTimestampArr = regex.split(regexPattern, rawTimestamp)
@@ -51,6 +51,6 @@ class FSDJumpEvent(Event):
         self.systemCoordinates = message.get('StarPos')
         self.systemPopulation = message.get('Population')
         self.factions = message.get('Factions')
-        
+
         # Message Data
         #self.messageData = message
