@@ -17,7 +17,7 @@ class iteratorThread(Thread):
             #   remove entries marked for deletion
             #   execute iteration step on each entry
             print("\nIteration beginning")
-            systemList = [sys for sys in systemList if sys.performInterval() == False]
+            systemList[:] = [sys for sys in systemList if not sys.performInterval()]
             self.__printTracking(systemList)
 
             # do thing (send the info somewhere useful, like push to discord or do a webhook thing or update a website)

@@ -5,7 +5,15 @@ from IteratorFuncs import iteratorThread
 
 
 def main():
-    # 2 threads
+    # # 2 threads
+    # a = ['a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b', 'b']
+    # a.append('c')
+    # a.pop(0)
+    # # a[:] = [x for x in a if x == 'a']
+    # print(a)
+    # input()
+
+
     iteratorThread().start()
     print("IteratorThread started")
     EDDNThread().start()
