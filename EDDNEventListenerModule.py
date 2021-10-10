@@ -22,7 +22,7 @@ def _formatTimestamp(rawTimestamp):
 class Event:
     def __init__(self, message):
         self.rawTimestamp = message.get('timestamp')
-        self.formattedTimestamp = _formatTimestamp(self.timestamp)
+        self.formattedTimestamp = _formatTimestamp(self.rawTimestamp)
         self.eventAgeSeconds = (datetime.datetime.utcnow() - self.formattedTimestamp).seconds
         self.eventType = message.get('event')
         if self.eventType == None:
