@@ -7,12 +7,15 @@ from system import systemList
 
 class iteratorThread(Thread):
 
-    def run(self, intervalMins: int = 5):
+    def __init__(self, intervalMins: int = 5):
+        super().__init__()
+        self.intrvlMins = intervalMins * 60
+
+    def run(self):
         global systemList
-        sleepTime = intervalMins * 60
 
         while True:
-            time.sleep(sleepTime)
+            time.sleep(self.intrvlMins)
             #   iterate over system list
             #   remove entries marked for deletion
             #   execute iteration step on each entry

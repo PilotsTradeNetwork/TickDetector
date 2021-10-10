@@ -1,5 +1,5 @@
 class System:
-    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12, minimumObservedSpan: int = 6):
+    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12, minFrequencyToTrack: int = 6):
         # OBJECT PROPERTIES
         # unique identifier
         self.name = sysName
@@ -7,7 +7,7 @@ class System:
 
         # universal across all Systems, consider moving to a higher scope (factory?) to save memory
         self.__maxIntvlCnt = maxIntervalCount
-        self.__minSpan = minimumObservedSpan
+        self.__minSpan = minFrequencyToTrack
         
         # OBJECT STATES
         self.isTicked = None

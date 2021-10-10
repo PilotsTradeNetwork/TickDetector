@@ -19,53 +19,61 @@ __subscriber            = None
 class EDDNThread(Thread):
     global systemList
 
-    def run(self, filterType: str = "Influence"):
-        schemaURL = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
-        setupEDDN()
-        with urllib.request.urlopen(schemaURL) as url:
-            data = simplejson.loads(url.read().decode())
+    def __init__(self, maxIntervals: int = 12, minFrequencyToTrack: int = 6):
+        super().__init__()
+        if minFrequencyToTrack >= maxIntervals:
+            raise ValueError(f'Minimum Interval to Track param\' ({minFrequencyToTrack}) must be smaller than the Maximum Interval param\' ({maxIntervals})')
 
-        schema = data
-        expression = regex.compile('("Influence": \d+\.\d+)')
+        # Variables to control interval window
+        self.maxObsIntrvls = maxIntervals
+        self.minSpan = minFrequencyToTrack
+
+        # Get journal event schema from EDDN directly
+        schemaURL = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
+        with urllib.request.urlopen(schemaURL) as url:
+            schemaData = simplejson.loads(url.read().decode())
+        self.schema = schemaData
+        
+        # Regex expression for extracting Influence values from textual json
+        self.influenceRegex = regex.compile('("Influence": \d+\.\d+)')
+        
+        setupEDDN()
+        
+    def run(self):
         while True:
-            time.sleep(0) # maybe move me to the end of the list
+            time.sleep(0) # Allow iteratorThread to run without them running simultaneously
+
             eventJson = listenEDDN()
 
-            # Validate event schema
             try:
-                validate(eventJson, schema=schema)
-            except Exception as e:
-                # print(e)
+                validate(eventJson, schema=self.schema) # validate comes from jsonschema
+            except Exception:
                 continue
             
             event = EListn.createFSDJumpEvent(EListn.createMessageFromJson(eventJson))
 
+            # skip non FSDJumps, old updates (>5min), and factionless (unpopulated) systems
             if event == None or event.eventAgeSeconds > 300 or event.factions == None:
                 continue
             
-            # This will detect influence or state tick changes in a system
-            if filterType == "Influence":
-                textInf = ''.join(regex.findall(expression, simplejson.dumps(event.factions)))
-                # print(f"Test: {textInf}")
-                hashVal = hash(textInf)
-                systemName = event.systemName
-
-            #bug fixing
-            # if systemName == "Alcor":
-            #     print(simplejson.dumps(event.factions))
+            # Convert factions list to json object for hashing
+            influenceText = ''.join(regex.findall(self.influenceRegex, simplejson.dumps(event.factions)))
+            hashVal = hash(influenceText)
+            sysName = event.systemName
             
-            # Guard for empty sysList
-            if len(systemList) == 0:
-                systemList.append(System(systemName, hashVal))
+            if self.__isExistingSystem(sysName, hashVal):
                 continue
-            
-            for sys in systemList:
-                if sys.name == systemName:
-                    sys.receiveStateUpdate(hashVal)
-                    continue
-            
-            # add a new system to sysList
-            systemList.append(System(systemName, hashVal))
+            else:
+                systemList.append(System(sysName, hashVal, self.maxObsIntrvls, self.minSpan))
+
+    def __isExistingSystem(self, reportedSysName, hashVal):
+        if len(systemList) > 0:
+            for system in systemList:
+                if system.name == reportedSysName:
+                    system.receiveStateUpdate(hashVal)
+                    return True
+        return False
+
 
 def setupEDDN():
         global __subscriber

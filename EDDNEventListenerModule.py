@@ -11,22 +11,24 @@ def createMessageFromJson(jsonData):
         print(e)
     return None
 
-def formatTimestamp(rawTimestamp):
-    regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
-    
-    cleanTimestampArr = regex.split(regexPattern, rawTimestamp)
-    dateTimeString = cleanTimestampArr[1] + " " + cleanTimestampArr[2] + ".000000"
-    cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
-    return cleanTimeStamp
+
 
 class Event:
     def __init__(self, message):
         self.timestamp = message.get('timestamp')
-        self.formattedTimestamp = formatTimestamp(self.timestamp)
+        self.formattedTimestamp = self.__formatTimestamp(self.timestamp)
         self.eventAgeSeconds = (datetime.datetime.utcnow() - self.formattedTimestamp).seconds
         self.eventType = message.get('event')
         if self.eventType == None:
             raise ValueError("Class 'Event': attempted to instantiate an Event Object using a message containing no Event. Check if the message has an event first.")
+
+    def __formatTimestamp(rawTimestamp):
+        regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
+        
+        cleanTimestampArr = regex.split(regexPattern, rawTimestamp)
+        dateTimeString = cleanTimestampArr[1] + " " + cleanTimestampArr[2] + ".000000"
+        cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
+        return cleanTimeStamp
 
 def createFSDJumpEvent(message):
     if message == None: 
@@ -48,13 +50,7 @@ class FSDJumpEvent(Event):
             self.systemName = message.get('SystemAddress')
         self.systemCoordinates = message.get('StarPos')
         self.systemPopulation = message.get('Population')
-
-        # only present/relevant in populated systems
-
-        # Faction stuff, probably all needs revalidating due to data nesting
-        # self.factions = getFactions(message)
-
-        #reduced version
         self.factions = message.get('Factions')
+        
         # Message Data
         #self.messageData = message
