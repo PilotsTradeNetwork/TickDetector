@@ -45,7 +45,7 @@ class EDDNThread(Thread):
             
             # This will detect influence or state tick changes in a system
             if filterType == "Influence":
-                textInf = ''.join(regex.findall('("Influence": \d+\.\d+)', simplejson.dumps(event.factions)))
+                textInf = ''.join(regex.findall(expression, simplejson.dumps(event.factions)))
                 # print(f"Test: {textInf}")
                 hashVal = hash(textInf)
                 systemName = event.systemName
