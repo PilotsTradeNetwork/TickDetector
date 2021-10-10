@@ -11,24 +11,24 @@ def createMessageFromJson(jsonData):
         print(e)
     return None
 
-
+def _formatTimestamp(rawTimestamp):
+    regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
+    
+    cleanTimestampArr = regex.split(regexPattern, rawTimestamp)
+    dateTimeString = cleanTimestampArr[1] + " " + cleanTimestampArr[2] + ".000000"
+    cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
+    return cleanTimeStamp
 
 class Event:
     def __init__(self, message):
-        self.timestamp = message.get('timestamp')
-        self.formattedTimestamp = self.__formatTimestamp(self.timestamp)
+        self.rawTimestamp = message.get('timestamp')
+        self.formattedTimestamp = _formatTimestamp(self.timestamp)
         self.eventAgeSeconds = (datetime.datetime.utcnow() - self.formattedTimestamp).seconds
         self.eventType = message.get('event')
         if self.eventType == None:
             raise ValueError("Class 'Event': attempted to instantiate an Event Object using a message containing no Event. Check if the message has an event first.")
 
-    def __formatTimestamp(self, rawTimestamp):
-        regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
-        
-        cleanTimestampArr = regex.split(regexPattern, rawTimestamp)
-        dateTimeString = cleanTimestampArr[1] + " " + cleanTimestampArr[2] + ".000000"
-        cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
-        return cleanTimeStamp
+
 
 def createFSDJumpEvent(message):
     if message == None: 
