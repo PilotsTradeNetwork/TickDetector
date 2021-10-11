@@ -11,16 +11,6 @@ def createMessageFromJson(jsonData):
     
     return None
 
-def _formatTimestamp(unformattedTimestamp):
-    regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
-    
-    cleanTimeStampArr = regex.split(regexPattern, unformattedTimestamp)
-    if cleanTimeStampArr == None:
-        raise ValueError(f"An incorrectly formatted timestamp was received\n{unformattedTimestamp}")
-
-    dateTimeString = cleanTimeStampArr[1] + " " + cleanTimeStampArr[2] + ".000000"
-    cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
-    return cleanTimeStamp
 
 class Event:
     def __init__(self, message):
@@ -29,7 +19,8 @@ class Event:
         self.eventAgeSeconds = (datetime.datetime.utcnow() - self.formattedTimestamp).seconds
         self.eventType = message.get('event')
         if self.eventType == None:
-            raise ValueError("Class 'Event': attempted to instantiate an Event Object using a message containing no Event. Check if the message has an event first.")
+            raise ValueError("Class 'Event': attempted to instantiate an Event Object using a \
+                            message containing no Event. Check if the message has an event first.")
 
 def createFSDJumpEvent(message):
     if message.get('event') == 'FSDJump':
@@ -38,7 +29,7 @@ def createFSDJumpEvent(message):
     return None
 
 class FSDJumpEvent(Event):
-    """FSDJumpEvent, but super lightweight"""
+    """Extends Event class. This is a lightweight version of FSDJumpEvent"""
     def __init__(self, message):
         super().__init__(message)
 
@@ -57,3 +48,15 @@ class FSDJumpEvent(Event):
 
         # Message Data
         #self.messageData = message
+
+def _formatTimestamp(unformattedTimestamp):
+    regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
+    
+    cleanTimeStampArr = regex.split(regexPattern, unformattedTimestamp)
+    if cleanTimeStampArr == None:
+        raise ValueError(f"An incorrectly formatted timestamp was received\n{unformattedTimestamp}")
+
+    dateTimeString = cleanTimeStampArr[1] + " " + cleanTimeStampArr[2] + ".000000"
+    cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
+    return cleanTimeStamp
+

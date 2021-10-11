@@ -39,6 +39,8 @@ class EDDNThread(Thread):
         
         setupEDDN()
         
+        print("EDDNThread started")
+        
     def run(self):
         while True:
             time.sleep(0) # Allow iteratorThread to run without them running simultaneously
@@ -61,20 +63,26 @@ class EDDNThread(Thread):
             hashVal = hash(influenceText)
             sysName = event.systemName
 
-            
-            existingIndex = self.__findExistingSystem(sysName)
-            
-            if existingIndex != None:
-                systemList[existingIndex].receiveStateUpdate(hashVal)
-            else:
-                systemList.append(System(sysName, hashVal, self.maxObsIntrvls, self.minSpan))
+            self.__updateSystemList(hashVal, sysName)
+
+    def __updateSystemList(self, hashVal, sysName):
+        existingIndex = self.__findExistingSystem(sysName)
+
+        if existingIndex == None:
+            systemList.append(System(sysName, hashVal, self.maxObsIntrvls, self.minSpan))
+        else:
+            systemList[existingIndex].receiveStateUpdate(hashVal)
+
 
     def __findExistingSystem(self, reportedSysName):
+        """Finds existing systems if they are in the list, otherwise returns None."""
         if len(systemList) > 0:
             for index, system in enumerate(systemList):
                 if system.name == reportedSysName:
                     return index
         return None
+    
+
 
 
 def setupEDDN():

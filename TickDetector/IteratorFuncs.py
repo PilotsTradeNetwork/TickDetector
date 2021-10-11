@@ -17,6 +17,8 @@ class iteratorThread(Thread):
         self.__tracked = 0
         self.__observed = 0
         self.__ticked = 0
+        
+        print("IteratorThread started")
 
     def run(self):
         while True:

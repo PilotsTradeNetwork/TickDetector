@@ -35,12 +35,24 @@ class System:
             return True
 
         # Handle 'Ticked' Systems
-        self.__updateIfTicked()
-        self.__updateIfExpired()
+        self.__iterateIfTicked()
+        self.__iterateIfExpired()
 
         return False
 
-    def __updateIfTicked(self):
+    def receiveStateUpdate(self, hash: int):
+        """Accepts a hash of a system's faction's overall state, handles whether that represents a new tick."""
+        if self.__intrvlsSinceUpdate > 0:
+            if hash in self.__stateHashes:
+                self.__receiveStateUpdate(hash)
+            else:
+                self.__receiveStateChange(hash)
+        else:
+            return
+        
+        # NB: This doesn't report a Tick on the System's first entry, because first entry occurs as part of the __init__
+
+    def __iterateIfTicked(self):
         # Handle 'Ticked' Systems
         if self.isTicked == True:
             self.__intrvlsSinceTick += 1
@@ -50,20 +62,10 @@ class System:
                 self.isTicked = False
                 self.__intrvlsSinceTick = 0
 
-    def __updateIfExpired(self):
+    def __iterateIfExpired(self):
         if self.isTicked == False:
             if self.__intrvlsSinceUpdate >= self.__minSpan and self.isTicked == False:
                 self.isTicked = None
-
-    def receiveStateUpdate(self, hash: int):
-        """Accepts a hash of a system's faction's overall state, handles whether that represents a new tick."""
-        if self.__intrvlsSinceUpdate > 0:
-            if hash in self.__stateHashes:
-                self.__receiveStateUpdate(hash)
-            else:
-                self.__receiveStateChange(hash)
-        
-        # NB: This doesn't report a Tick on the System's first entry, because first entry occurs as part of the __init__
 
     def __receiveStateUpdate(self, hash: int):
         # State is already present in log (a normal Update), and current interval has not been updated
