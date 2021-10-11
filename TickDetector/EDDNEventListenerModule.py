@@ -8,7 +8,7 @@ def createMessageFromJson(jsonData):
         return message
     except Exception as e:
         print(f"jsonData that does not contain the 'message' datastructure found:\n{e}")
-    
+
     return None
 
 
