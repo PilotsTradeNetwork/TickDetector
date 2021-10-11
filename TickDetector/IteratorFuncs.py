@@ -2,8 +2,8 @@ from datetime import datetime
 from threading import Thread
 import time
 from system import systemList
-from privateInfo import TEST_DISCORDWEBHOOKURL
 from discord_webhook import DiscordWebhook
+from settings import WEBHOOK_URL
 
 
 
@@ -53,6 +53,5 @@ class iteratorThread(Thread):
         print(f"Time: {nowFormatted}\nTicked Systems in last Hr = {self.__ticked},\nCurrently Tracked Systems = {self.__tracked},\nCurrently Observed Systems = {self.__observed}")
 
     def __sendStatusToDiscord(self):
-        webhook = DiscordWebhook(url=TEST_DISCORDWEBHOOKURL, content=f'Tracked Systems: {self.__tracked}\nTicked Systems: {self.__ticked}')
+        webhook = DiscordWebhook(url=WEBHOOK_URL, content=f'Tracked Systems: {self.__tracked}\nTicked Systems: {self.__ticked}')
         response = webhook.execute()
-

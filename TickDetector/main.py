@@ -1,8 +1,5 @@
-# internal
 from EDDNFuncs import EDDNThread
 from IteratorFuncs import iteratorThread
-
-
 
 def main():
     iteratorThread().start()

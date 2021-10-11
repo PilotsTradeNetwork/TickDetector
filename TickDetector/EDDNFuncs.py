@@ -10,8 +10,8 @@ import re as regex
 
 import EDDNEventListenerModule as EListn
 from system import systemList, System
+from settings import EDDN_RELAY, JOURNAL_SCHEMA_URL
 
-__relayEDDN             = 'tcp://eddn.edcd.io:9500'
 __timeoutEDDN           = 600000
 __subscriber            = None
 
@@ -29,8 +29,7 @@ class EDDNThread(Thread):
         self.minSpan = minFrequencyToTrack
 
         # Get journal event schema from EDDN directly
-        schemaURL = 'https://raw.githubusercontent.com/EDCD/EDDN/master/schemas/journal-v1.0.json'
-        with urllib.request.urlopen(schemaURL) as url:
+        with urllib.request.urlopen(JOURNAL_SCHEMA_URL) as url:
             schemaData = simplejson.loads(url.read().decode())
         self.schema = schemaData
         
@@ -96,11 +95,11 @@ def setupEDDN():
 
 def listenEDDN():
         try:
-            __subscriber.connect(__relayEDDN)
+            __subscriber.connect(EDDN_RELAY)
             sys.stdout.flush()
             __message   = __subscriber.recv()
             if __message == False:
-                __subscriber.disconnect(__relayEDDN)
+                __subscriber.disconnect(EDDN_RELAY)
                 return None
             __message   = zlib.decompress(__message)
             __json      = simplejson.loads(__message)
@@ -109,15 +108,5 @@ def listenEDDN():
         except zmq.ZMQError as e:
             print ('ZMQSocketException: ' + str(e))
             sys.stdout.flush()
-            __subscriber.disconnect(__relayEDDN)
+            __subscriber.disconnect(EDDN_RELAY)
             time.sleep(5)
-
-# EDDN facing thread
-#   get message
-#       filter by:
-#       schema
-#       isPopulated
-#       has a faction
-#   form a factions object
-#   hash the factions object
-#   pass the hash and its system to system list
