@@ -30,15 +30,16 @@ class System:
         self.__stateHashes.pop(0)
         self.__stateHashes.append(None)
 
-        # Delete the object if it has no data
         if self.__intrvlsSinceUpdate >= self.__maxIntvlCnt:
-            return True
+            # System has no data, it will be deleted
+            return False
 
         # Handle 'Ticked' Systems
         self.__iterateIfTicked()
         self.__iterateIfExpired()
 
-        return False
+        # Will be kept
+        return True
 
     def receiveStateUpdate(self, hash: int):
         """Accepts a hash of a system's faction's overall state, handles whether that represents a new tick."""
