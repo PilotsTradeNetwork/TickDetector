@@ -7,41 +7,39 @@ def createMessageFromJson(jsonData):
         message = jsonData['message']
         return message
     except Exception as e:
-        print("getMessageData() jsonData that does not contain the 'message' datastructure found:")
-        print(e)
+        print(f"jsonData that does not contain the 'message' datastructure found:\n{e}")
+    
     return None
 
-def _formatTimestamp(rawTimestamp):
+def _formatTimestamp(unformattedTimestamp):
     regexPattern = r"(\d{4}-\d{2}-\d{2}).(\d{2}:\d{2}:\d{2})."
     
-    cleanTimestampArr = regex.split(regexPattern, rawTimestamp)
-    dateTimeString = cleanTimestampArr[1] + " " + cleanTimestampArr[2] + ".000000"
+    cleanTimeStampArr = regex.split(regexPattern, unformattedTimestamp)
+    dateTimeString = cleanTimeStampArr[1] + " " + cleanTimeStampArr[2] + ".000000"
     cleanTimeStamp = datetime.datetime.strptime(dateTimeString, '%Y-%m-%d %H:%M:%S.%f')
     return cleanTimeStamp
 
 class Event:
     def __init__(self, message):
-        self.rawTimestamp = message.get('timestamp')
-        self.formattedTimestamp = _formatTimestamp(self.rawTimestamp)
+        self.__eventRawTimestamp = message.get('timestamp')
+        self.formattedTimestamp = _formatTimestamp(self.__eventRawTimestamp)
         self.eventAgeSeconds = (datetime.datetime.utcnow() - self.formattedTimestamp).seconds
         self.eventType = message.get('event')
         if self.eventType == None:
             raise ValueError("Class 'Event': attempted to instantiate an Event Object using a message containing no Event. Check if the message has an event first.")
 
-
-
 def createFSDJumpEvent(message):
-    if message == None: 
-        return None
-
     if message.get('event') == 'FSDJump':
         return FSDJumpEvent(message)
+    
     return None
 
 class FSDJumpEvent(Event):
     """FSDJumpEvent, but super lightweight"""
     def __init__(self, message):
         super().__init__(message)
+        if self.eventType != 'FSDJump':
+            raise ValueError('FSDJump event cannot be created from non-FSDJump data')
 
         # System data that's always present
         self.systemName = message.get('StarSystem')

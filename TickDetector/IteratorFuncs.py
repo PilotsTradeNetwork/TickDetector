@@ -14,9 +14,9 @@ class iteratorThread(Thread):
         super().__init__()
         self.intrvlMins = intervalMins * 60
         
-        self.tracked = 0
-        self.observed = 0
-        self.ticked = 0
+        self.__tracked = 0
+        self.__observed = 0
+        self.__ticked = 0
 
     def run(self):
         while True:
@@ -32,25 +32,25 @@ class iteratorThread(Thread):
             # do thing (send the info somewhere useful, like push to discord or do a webhook thing or update a website)
 
     def __printTracking(self, systemList):
-        self.tracked = 0
-        self.observed = 0
-        self.ticked = 0
+        self.__tracked = 0
+        self.__observed = 0
+        self.__ticked = 0
 
         for sys in systemList:
             if sys.isTicked == True:
-                self.ticked += 1
-                self.tracked += 1
-                self.observed += 1
+                self.__ticked += 1
+                self.__tracked += 1
+                self.__observed += 1
             elif sys.isTicked == False:
-                self.tracked += 1
-                self.observed += 1
+                self.__tracked += 1
+                self.__observed += 1
             elif sys.isTicked == None:
-                self.observed += 1
+                self.__observed += 1
         now = datetime.now()
         nowFormatted = now.strftime("%H:%M:%S")
-        print(f"Time: {nowFormatted}\nTicked Systems in last Hr = {self.ticked},\nCurrently Tracked Systems = {self.tracked},\nCurrently Observed Systems = {self.observed}")
+        print(f"Time: {nowFormatted}\nTicked Systems in last Hr = {self.__ticked},\nCurrently Tracked Systems = {self.__tracked},\nCurrently Observed Systems = {self.__observed}")
 
     def __sendStatusToDiscord(self):
-        webhook = DiscordWebhook(url=TEST_DISCORDWEBHOOKURL, content=f'Tracked Systems: {self.tracked}\nTicked Systems: {self.ticked}')
+        webhook = DiscordWebhook(url=TEST_DISCORDWEBHOOKURL, content=f'Tracked Systems: {self.__tracked}\nTicked Systems: {self.__ticked}')
         response = webhook.execute()
 
