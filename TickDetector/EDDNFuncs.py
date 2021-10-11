@@ -52,7 +52,7 @@ class EDDNThread(Thread):
             
             event = EListn.createFSDJumpEvent(EListn.createMessageFromJson(eventJson))
 
-            # skip non FSDJumps, old updates (>5min), and factionless (unpopulated) systems
+            # Skip non FSDJumps, old updates (>5min), and factionless (unpopulated) systems
             if event == None or event.eventAgeSeconds > 300 or event.factions == None:
                 continue
             
@@ -60,19 +60,21 @@ class EDDNThread(Thread):
             influenceText = ''.join(regex.findall(self.influenceRegex, simplejson.dumps(event.factions)))
             hashVal = hash(influenceText)
             sysName = event.systemName
+
             
-            if self.__isExistingSystem(sysName, hashVal):
-                continue
+            existingIndex = self.__findExistingSystem(sysName)
+            
+            if existingIndex != None:
+                systemList[existingIndex].receiveStateUpdate(hashVal)
             else:
                 systemList.append(System(sysName, hashVal, self.maxObsIntrvls, self.minSpan))
 
-    def __isExistingSystem(self, reportedSysName, hashVal):
+    def __findExistingSystem(self, reportedSysName):
         if len(systemList) > 0:
-            for system in systemList:
+            for index, system in enumerate(systemList):
                 if system.name == reportedSysName:
-                    system.receiveStateUpdate(hashVal)
-                    return True
-        return False
+                    return index
+        return None
 
 
 def setupEDDN():
