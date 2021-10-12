@@ -3,22 +3,16 @@ import zlib
 import zmq
 import simplejson
 from jsonschema import validate
-import sys
+import sys as sysImport
 import time
 import urllib.request
 import re as regex
 
 import EDDNEventListenerModule as EListn
 from settings import EDDN_RELAY, JOURNAL_SCHEMA_URL
-from SystemManager import SystemManager
-
-__timeoutEDDN           = 600000
-__subscriber            = None
-
+from SystemManager import systemManager as sysMan
 
 class EDDNThread(Thread):
-    global systemList
-
     def __init__(self):
         super().__init__()
 
@@ -29,16 +23,22 @@ class EDDNThread(Thread):
         
         # Regex expression for extracting Influence values from textual json
         self.influenceRegex = regex.compile('("Influence": \d+\.\d+)')
+
+        # ZMQ stuff
+        self.__subscriber = None
+        self.__timeoutEDDN = 600000
         
-        setupEDDN()
+        self.__setupEDDN()
         
         print("EDDNThread started")
         
     def run(self):
+        global sysMan
+
         while True:
             time.sleep(0) # Allow iteratorThread to run without them running simultaneously
 
-            eventJson = listenEDDN()
+            eventJson = self.listenEDDN()
 
             try:
                 validate(eventJson, schema=self.schema) # validate comes from jsonschema
@@ -56,29 +56,23 @@ class EDDNThread(Thread):
             hashVal = hash(influenceText)
             sysName = event.systemName
 
-            self.__updateSystemList(hashVal, sysName)
+            sysMan.updateSystemList(hashVal, sysName)
 
+    def __setupEDDN(self):
+            global __subscriber
+            context     = zmq.Context()
+            self.__subscriber  = context.socket(zmq.SUB)
+            
+            self.__subscriber.setsockopt(zmq.SUBSCRIBE, b"")
+            self.__subscriber.setsockopt(zmq.RCVTIMEO, self.__timeoutEDDN)
 
-    
-
-
-
-def setupEDDN():
-        global __subscriber
-        context     = zmq.Context()
-        __subscriber  = context.socket(zmq.SUB)
-        
-        __subscriber.setsockopt(zmq.SUBSCRIBE, b"")
-        __subscriber.setsockopt(zmq.RCVTIMEO, __timeoutEDDN)
-
-
-def listenEDDN():
+    def listenEDDN(self):
         try:
-            __subscriber.connect(EDDN_RELAY)
-            sys.stdout.flush()
-            __message   = __subscriber.recv()
+            self.__subscriber.connect(EDDN_RELAY)
+            sysImport.stdout.flush()
+            __message = self.__subscriber.recv()
             if __message == False:
-                __subscriber.disconnect(EDDN_RELAY)
+                self.__subscriber.disconnect(EDDN_RELAY)
                 return None
             __message   = zlib.decompress(__message)
             __json      = simplejson.loads(__message)
@@ -86,6 +80,6 @@ def listenEDDN():
 
         except zmq.ZMQError as e:
             print ('ZMQSocketException: ' + str(e))
-            sys.stdout.flush()
-            __subscriber.disconnect(EDDN_RELAY)
+            sysImport.stdout.flush()
+            self.__subscriber.disconnect(EDDN_RELAY)
             time.sleep(5)

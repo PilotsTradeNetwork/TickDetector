@@ -1,5 +1,5 @@
 class System:
-    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12, minFrequencyToTrack: int = 6):
+    def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12):
         # unique identifier
         self.name = sysName
         

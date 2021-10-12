@@ -1,36 +1,35 @@
 from datetime import datetime
 from threading import Thread
 import time
-from System import systemList
 from discord_webhook import DiscordWebhook
-from settings import WEBHOOK_URL
+from settings import WEBHOOK_URL, INTERVAL_DURATION_MINS
+from SystemManager import systemManager as sysMan
 
 class iteratorThread(Thread):
-    global systemList
-
-    def __init__(self, intervalMins: int = 5):
+    def __init__(self):
         super().__init__()
-        self.__intrvl = intervalMins * 60
+        self.__intrvl = INTERVAL_DURATION_MINS * 60
         self.__ticked = self.__tracked = self.__observed = 0
         print("IteratorThread started")
 
     def run(self):
+        global sysMan
         while True:
             time.sleep(self.__intrvl)
             print("\nIteration beginning...")
 
-            # Iterate systems
+            sysMan.iterateSystemList()
 
-            self.__calculateTracking()
+            self.__calculateTracking(sysMan.systemList)
 
             self.__printStatus()
 
             self.__sendStatusToDiscord()
 
-    def __calculateTracking(self):
+    def __calculateTracking(self, sysL):
         self.__ticked = self.__tracked = self.__observed = 0
 
-        for sys in systemList:
+        for sys in sysL:
             if sys.isTicked == True: self.__ticked += 1
             if sys.isTicked is not None: self.__tracked += 1
             self.__observed += 1
