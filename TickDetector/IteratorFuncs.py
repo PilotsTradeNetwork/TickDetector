@@ -1,7 +1,7 @@
 from datetime import datetime
 from threading import Thread
 import time
-from system import systemList
+from System import systemList
 from discord_webhook import DiscordWebhook
 from settings import WEBHOOK_URL
 
