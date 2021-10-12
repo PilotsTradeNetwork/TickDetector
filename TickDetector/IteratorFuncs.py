@@ -19,8 +19,7 @@ class iteratorThread(Thread):
             time.sleep(self.__intrvl)
             print("\nIteration beginning...")
 
-            # Deletes systems according to performInterval's logic
-            systemList[:] = [sys for sys in systemList if sys.performInterval()]
+            # Iterate systems
 
             self.__calculateTracking()
 

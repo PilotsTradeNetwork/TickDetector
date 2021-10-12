@@ -9,8 +9,8 @@ import urllib.request
 import re as regex
 
 import EDDNEventListenerModule as EListn
-from system import systemList, System
 from settings import EDDN_RELAY, JOURNAL_SCHEMA_URL
+from SystemManager import SystemManager
 
 __timeoutEDDN           = 600000
 __subscriber            = None
@@ -19,14 +19,8 @@ __subscriber            = None
 class EDDNThread(Thread):
     global systemList
 
-    def __init__(self, maxIntervals: int = 12, minFrequencyToTrack: int = 6):
+    def __init__(self):
         super().__init__()
-        if minFrequencyToTrack >= maxIntervals:
-            raise ValueError(f'Minimum Interval to Track param\' ({minFrequencyToTrack}) must be smaller than the Maximum Interval param\' ({maxIntervals})')
-
-        # Variables to control interval window
-        self.maxObsIntrvls = maxIntervals
-        self.minSpan = minFrequencyToTrack
 
         # Get journal event schema from EDDN directly
         with urllib.request.urlopen(JOURNAL_SCHEMA_URL) as url:
@@ -64,22 +58,7 @@ class EDDNThread(Thread):
 
             self.__updateSystemList(hashVal, sysName)
 
-    def __updateSystemList(self, hashVal, sysName):
-        existingIndex = self.__findExistingSystem(sysName)
 
-        if existingIndex == None:
-            systemList.append(System(sysName, hashVal, self.maxObsIntrvls, self.minSpan))
-        else:
-            systemList[existingIndex].receiveStateUpdate(hashVal)
-
-
-    def __findExistingSystem(self, reportedSysName):
-        """Finds existing systems if they are in the list, otherwise returns None."""
-        if len(systemList) > 0:
-            for index, system in enumerate(systemList):
-                if system.name == reportedSysName:
-                    return index
-        return None
     
 
 
