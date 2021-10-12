@@ -1,6 +1,5 @@
 class System:
     def __init__(self, sysName: str, initHash: int, maxIntervalCount: int = 12, minFrequencyToTrack: int = 6):
-        # OBJECT PROPERTIES
         # unique identifier
         self.name = sysName
 
@@ -35,7 +34,7 @@ class System:
         self.__iterateIfTicked()
         self.__iterateIfExpired()
 
-        # Will be kept
+        # System has data and will therefore be kept
         return True
 
     def receiveStateUpdate(self, hash: int):
