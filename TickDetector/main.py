@@ -1,8 +1,8 @@
 from EDDNFuncs import EDDNThread
-from IteratorFuncs import iteratorThread
+from IteratorFuncs import IteratorThread
 
 def main():
-    iteratorThread().start()
+    IteratorThread().start()
     EDDNThread().start()
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ from discord_webhook import DiscordWebhook
 from settings import WEBHOOK_URL, INTERVAL_DURATION_MINS
 from SystemManager import systemManager as sysMan
 
-class iteratorThread(Thread):
+class IteratorThread(Thread):
     def __init__(self):
         super().__init__()
         self.__intrvl = INTERVAL_DURATION_MINS * 60
