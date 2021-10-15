@@ -1,5 +1,5 @@
-from EDDNFuncs import EDDNThread
-from IteratorFuncs import IteratorThread
+from EDDNThread import EDDNThread
+from IteratorThread import IteratorThread
 
 def main():
     IteratorThread().start()
