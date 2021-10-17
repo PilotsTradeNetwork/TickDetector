@@ -18,7 +18,7 @@ class IteratorThread(Thread):
             time.sleep(self.__intrvl)
             print("\nIteration beginning...")
 
-            sysMan.iterateSystemList()
+            sysMan.iterateSystemList() #Most important line in this function
 
             self.__calculateTracking(sysMan.systemList)
 
@@ -27,12 +27,18 @@ class IteratorThread(Thread):
             self.__sendStatusToDiscord()
 
     def __calculateTracking(self, sysL):
+        """Counts up Systems according to their status, takes the SystemList."""
         self.__ticked = self.__tracked = self.__observed = 0
 
         for sys in sysL:
-            if sys.isTicked == True: self.__ticked += 1
-            if sys.isTicked is not None: self.__tracked += 1
-            self.__observed += 1
+            if sys.isTicked == True:
+                self.__ticked += 1
+            if sys.isTicked is not None:
+                self.__tracked += 1
+            
+            self.__observed += 1 # All systems in the system list are observed at minimum
+
+        #TODO: Consider moving into SystemManager, and returning tick/track/obs variables
 
     def __printStatus(self):
         now = datetime.now()

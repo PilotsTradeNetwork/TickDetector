@@ -12,7 +12,7 @@ class SystemManager:
         self.__minFrequency = MIN_INTERVAL_FREQUENCY
 
     def iterateSystemList(self):
-        # Deletes systems according to performInterval's logic
+        """Handles the interval-bound updating, tracking, and deletion of System objects."""
         self.systemList[:] = [sys for sys in self.systemList if self._iterateSystem(sys)]
 
     def updateSystemList(self, hashVal: int, sysName: str):
